@@ -1,10 +1,10 @@
 import os
 import shutil
 import tempfile
-import fdkBridge
-from fdkBridge import haveFDK
-from makeotfParts import MakeOTFPartsCompiler
-from outlineOTF import OutlineOTFCompiler
+from . import fdkBridge
+from .fdkBridge import haveFDK
+from .makeotfParts import MakeOTFPartsCompiler
+from .outlineOTF import OutlineOTFCompiler
 
 
 __all__ = [

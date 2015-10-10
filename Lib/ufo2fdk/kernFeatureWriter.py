@@ -83,7 +83,7 @@ class KernFeatureWriter(object):
             feature.append(line)
         feature.append("} kern;")
         # done
-        return u"\n".join(feature)
+        return "\n".join(feature)
 
     # -------------
     # Initial Setup
@@ -98,7 +98,7 @@ class KernFeatureWriter(object):
         """
         side1Groups = self.side1Groups = {}
         side2Groups = self.side2Groups = {}
-        for groupName, contents in self.font.groups.items():
+        for groupName, contents in list(self.font.groups.items()):
             contents = [glyphName for glyphName in contents if glyphName in self.font]
             if not contents:
                 continue
@@ -116,7 +116,7 @@ class KernFeatureWriter(object):
         You should not call this method directly.
         """
         pairs = self.pairs = {}
-        for (side1, side2), value in self.font.kerning.items():
+        for (side1, side2), value in list(self.font.kerning.items()):
             # skip missing glyphs
             if side1 not in self.side1Groups and side1 not in self.font:
                 continue
@@ -137,13 +137,13 @@ class KernFeatureWriter(object):
         You should not call this method directly.
         """
         mapping = {}
-        for groupNames, feaPrefix in ((self.side1Groups.keys(), side1FeaPrefix), (self.side2Groups.keys(), side2FeaPrefix)):
+        for groupNames, feaPrefix in ((list(self.side1Groups.keys()), side1FeaPrefix), (list(self.side2Groups.keys()), side2FeaPrefix)):
             for groupName in sorted(groupNames):
                 className = feaPrefix + groupName[groupPrefixLength:]
-                mapping[groupName] = makeLegalClassName(className, mapping.keys())
+                mapping[groupName] = makeLegalClassName(className, list(mapping.keys()))
         # kerning
         newPairs = {}
-        for (side1, side2), value in self.pairs.items():
+        for (side1, side2), value in list(self.pairs.items()):
             if side1.startswith(side1Prefix):
                 side1 = mapping[side1]
             if side2.startswith(side2Prefix):
@@ -153,13 +153,13 @@ class KernFeatureWriter(object):
         self.pairs.update(newPairs)
         # groups
         newSide1Groups = {}
-        for groupName, contents in self.side1Groups.items():
+        for groupName, contents in list(self.side1Groups.items()):
             groupName = mapping[groupName]
             newSide1Groups[groupName] = contents
         self.side1Groups.clear()
         self.side1Groups.update(newSide1Groups)
         newSide2Groups = {}
-        for groupName, contents in self.side2Groups.items():
+        for groupName, contents in list(self.side2Groups.items()):
             groupName = mapping[groupName]
             newSide2Groups[groupName] = contents
         self.side2Groups.clear()
@@ -174,14 +174,14 @@ class KernFeatureWriter(object):
         """
         flatSide1Groups = self.flatSide1Groups = {}
         flatSide2Groups = self.flatSide2Groups = {}
-        for groupName, glyphList in self.side1Groups.items():
+        for groupName, glyphList in list(self.side1Groups.items()):
             for glyphName in glyphList:
                 # user has glyph in more than one group.
                 # this is not allowed.
                 if glyphName in flatSide1Groups:
                     continue
                 flatSide1Groups[glyphName] = groupName
-        for groupName, glyphList in self.side2Groups.items():
+        for groupName, glyphList in list(self.side2Groups.items()):
             for glyphName in glyphList:
                 # user has glyph in more than one group.
                 # this is not allowed.
@@ -193,7 +193,7 @@ class KernFeatureWriter(object):
     # Pair Support
     # ------------
 
-    def isHigherLevelPairPossible(self, (side1, side2)):
+    def isHigherLevelPairPossible(self, xxx_todo_changeme):
         """
         Determine if there is a higher level pair possible.
         This doesn't indicate that the pair exists, it simply
@@ -202,6 +202,7 @@ class KernFeatureWriter(object):
 
         You should not call this method directly.
         """
+        (side1, side2) = xxx_todo_changeme
         if side1.startswith(side1FeaPrefix):
             side1Group = side1
             side1Glyph = None
@@ -262,7 +263,7 @@ class KernFeatureWriter(object):
         groupGlyph = {}
         groupGlyphDecomposed = {}
         groupGroup = {}
-        for (side1, side2), value in pairs.items():
+        for (side1, side2), value in list(pairs.items()):
             if side1.startswith(side1FeaPrefix) and side2.startswith(side2FeaPrefix):
                 groupGroup[side1, side2] = value
             elif side1.startswith(side1FeaPrefix):
@@ -274,7 +275,7 @@ class KernFeatureWriter(object):
         ## handle decomposition
         allGlyphGlyph = set(glyphGlyph.keys())
         # glyph to group
-        for (side1, side2), value in glyphGroup.items():
+        for (side1, side2), value in list(glyphGroup.items()):
             if self.isHigherLevelPairPossible((side1, side2)):
                 finalRight = tuple([r for r in sorted(self.side2Groups[side2]) if (side1, r) not in allGlyphGlyph])
                 for r in finalRight:
@@ -282,7 +283,7 @@ class KernFeatureWriter(object):
                 glyphGroupDecomposed[side1, finalRight] = value
                 del glyphGroup[side1, side2]
         # group to glyph
-        for (side1, side2), value in groupGlyph.items():
+        for (side1, side2), value in list(groupGlyph.items()):
             if self.isHigherLevelPairPossible((side1, side2)):
                 finalLeft = tuple([l for l in sorted(self.side1Groups[side1]) if (l, side2) not in glyphGlyph and (l, side2) not in allGlyphGlyph])
                 for l in finalLeft:

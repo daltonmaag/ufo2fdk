@@ -92,10 +92,10 @@ def winStr(text):
     """
     Convert string to FDK encoding for Windows.
     """
-    return str("".join([winCharEncode(c) for c in unicode(text)]))
+    return str("".join([winCharEncode(c) for c in str(text)]))
 
 def macStr(text):
     """
     Convert string to FDK encoding for Mac.
     """
-    return str("".join([macCharEncode(c) for c in unicode(text)]))
+    return str("".join([macCharEncode(c) for c in str(text)]))

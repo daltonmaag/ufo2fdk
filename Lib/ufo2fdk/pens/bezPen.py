@@ -281,4 +281,4 @@ def drawBez(bez, pen):
             pen.curveTo(p1, p2, p3)
             lastToken = "curve"
         else:
-            raise NotImplementedError, line
+            raise NotImplementedError(line)

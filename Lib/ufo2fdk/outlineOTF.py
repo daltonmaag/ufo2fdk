@@ -1,11 +1,11 @@
-from __future__ import division
+
 import time
 from fontTools.ttLib import TTFont, newTable
 from fontTools.cffLib import TopDictIndex, TopDict, CharStrings, SubrsIndex, GlobalSubrsIndex, PrivateDict, IndexedStrings
 from fontTools.ttLib.tables.O_S_2f_2 import Panose
 from fontTools.ttLib.tables._h_e_a_d import mac_epoch_diff
-from pens.t2CharStringPen import T2CharStringPen
-from fontInfoData import getFontBounds, getAttrWithFallback, dateStringToTimeValue, dateStringForNow, intListToNum, normalizeStringForPostscript
+from .pens.t2CharStringPen import T2CharStringPen
+from .fontInfoData import getFontBounds, getAttrWithFallback, dateStringToTimeValue, dateStringForNow, intListToNum, normalizeStringForPostscript
 try:
     set
 except NameError:
@@ -105,7 +105,7 @@ class OutlineOTFCompiler(object):
         in a different way if desired.
         """
         mapping = {}
-        for glyphName, glyph in self.allGlyphs.items():
+        for glyphName, glyph in list(self.allGlyphs.items()):
             unicodes = glyph.unicodes
             for uni in unicodes:
                 mapping[uni] = glyphName
@@ -249,9 +249,9 @@ class OutlineOTFCompiler(object):
         """
         from fontTools.ttLib.tables._c_m_a_p import cmap_format_4
 
-        nonBMP = dict((k,v) for k,v in self.unicodeToGlyphNameMapping.items() if k > 65535)
+        nonBMP = dict((k,v) for k,v in list(self.unicodeToGlyphNameMapping.items()) if k > 65535)
         if nonBMP:
-            mapping = dict((k,v) for k,v in self.unicodeToGlyphNameMapping.items() if k <= 65535)
+            mapping = dict((k,v) for k,v in list(self.unicodeToGlyphNameMapping.items()) if k <= 65535)
         else:
             mapping = dict(self.unicodeToGlyphNameMapping)
         # mac
@@ -302,7 +302,7 @@ class OutlineOTFCompiler(object):
         font = self.ufo
         os2.version = 0x0004
         # average glyph width
-        widths = [glyph.width for glyph in self.allGlyphs.values() if glyph.width > 0]
+        widths = [glyph.width for glyph in list(self.allGlyphs.values()) if glyph.width > 0]
         os2.xAvgCharWidth = _roundInt(sum(widths) / len(widths))
         # weight and width classes
         os2.usWeightClass = getAttrWithFallback(font.info, "openTypeOS2WeightClass")
@@ -401,7 +401,7 @@ class OutlineOTFCompiler(object):
             selection += [0, 5]
         os2.fsSelection = intListToNum(selection, 0, 16)
         # characetr indexes
-        unicodes = [i for i in self.unicodeToGlyphNameMapping.keys() if i is not None]
+        unicodes = [i for i in list(self.unicodeToGlyphNameMapping.keys()) if i is not None]
         if unicodes:
             minIndex = min(unicodes)
             maxIndex = max(unicodes)
@@ -432,7 +432,7 @@ class OutlineOTFCompiler(object):
         """
         self.otf["hmtx"] = hmtx = newTable("hmtx")
         hmtx.metrics = {}
-        for glyphName, glyph in self.allGlyphs.items():
+        for glyphName, glyph in list(self.allGlyphs.items()):
             width = glyph.width
             left = 0
             if len(glyph) or len(glyph.components):
@@ -461,7 +461,7 @@ class OutlineOTFCompiler(object):
         lefts = []
         rights = []
         extents = []
-        for glyph in self.allGlyphs.values():
+        for glyph in list(self.allGlyphs.values()):
             left = glyph.leftMargin
             right = glyph.rightMargin
             if left is None:
@@ -571,7 +571,7 @@ class OutlineOTFCompiler(object):
         topDict.version = "%d.%d" % (getAttrWithFallback(info, "versionMajor"), getAttrWithFallback(info, "versionMinor"))
         trademark = getAttrWithFallback(info, "trademark")
         if trademark:
-            trademark = normalizeStringForPostscript(trademark.replace(u"\u00A9", "Copyright"))
+            trademark = normalizeStringForPostscript(trademark.replace("\u00A9", "Copyright"))
         if trademark != self.ufo.info.trademark:
             self.log.append("[Warning] The trademark was normalized for storage in the CFF table and consequently some characters were dropped: '%s'" % trademark)
         if trademark is None:
@@ -579,7 +579,7 @@ class OutlineOTFCompiler(object):
         topDict.Notice = trademark
         copyright = getAttrWithFallback(info, "copyright")
         if copyright:
-            copyright = normalizeStringForPostscript(copyright.replace(u"\u00A9", "Copyright"))
+            copyright = normalizeStringForPostscript(copyright.replace("\u00A9", "Copyright"))
         if copyright != self.ufo.info.copyright:
             self.log.append("[Warning] The copyright was normalized for storage in the CFF table and consequently some characters were dropped: '%s'" % copyright)
         if copyright is None:
@@ -655,7 +655,7 @@ class OutlineOTFCompiler(object):
             unicodes = glyph.unicodes
             charString = self.getCharStringForGlyph(glyph, private, globalSubrs)
             # add to the font
-            exists = charStrings.has_key(glyphName)
+            exists = glyphName in charStrings
             if exists:
                 # XXX a glyph already has this name. should we choke?
                 glyphID = charStrings.charStrings[glyphName]
@@ -697,9 +697,9 @@ class StubGlyph(object):
         self.unicodes = unicodes
         self.components = []
         if unicodes:
-            self.unicode = unicodes[0]
+            self.str = unicodes[0]
         else:
-            self.unicode = None
+            self.str = None
         if name == ".notdef":
             self.draw = self._drawDefaultNotdef
 

@@ -2,10 +2,10 @@ import codecs
 import os
 import shutil
 import re
-from fontInfoData import getAttrWithFallback, intListToNum, normalizeStringForPostscript
-from outlineOTF import OutlineOTFCompiler
-from featureTableWriter import FeatureTableWriter, winStr, macStr
-from kernFeatureWriter import KernFeatureWriter
+from .fontInfoData import getAttrWithFallback, intListToNum, normalizeStringForPostscript
+from .outlineOTF import OutlineOTFCompiler
+from .featureTableWriter import FeatureTableWriter, winStr, macStr
+from .kernFeatureWriter import KernFeatureWriter
 
 try:
     sorted
@@ -77,8 +77,8 @@ class MakeOTFPartsCompiler(object):
                 continue
             uniValue = None
             if glyphName in self.font:
-                uniValue = self.font[glyphName].unicode
-            finalMap[glyphName] = normalizeGlyphName(glyphName, uniValue, finalMap.values())
+                uniValue = self.font[glyphName].str
+            finalMap[glyphName] = normalizeGlyphName(glyphName, uniValue, list(finalMap.values()))
         # done
         return finalMap
 
@@ -175,8 +175,8 @@ class MakeOTFPartsCompiler(object):
         lines = []
         for designName in self.glyphOrder:
             finalName = self.glyphDesignNameToFinalNameMap[designName]
-            if designName in self.font and self.font[designName].unicode is not None:
-                code = self.font[designName].unicode
+            if designName in self.font and self.font[designName].str is not None:
+                code = self.font[designName].str
                 code = "%04X" % code
                 if len(code) <= 4:
                     code = "uni%s" % code
@@ -572,7 +572,7 @@ def normalizeGlyphName(glyphName, uniValue, existing):
     'glyph1'
     """
     # convert to unicode
-    glyphName = unicode(glyphName)
+    glyphName = str(glyphName)
     # remove illegal characters
     glyphName = unicodedata.normalize("NFKD", glyphName)
     glyphName = glyphName.encode("ascii", "ignore")
@@ -785,7 +785,7 @@ def extractFeaturesAndTables(text, scannedFiles=[]):
             continue
         # replace the strings
         finalText = text
-        for temp, original in stringReplacements.items():
+        for temp, original in list(stringReplacements.items()):
             if temp in finalText:
                 del stringReplacements[temp]
                 finalText = finalText.replace(temp, original, 1)

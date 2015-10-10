@@ -3,7 +3,8 @@ from fontTools.pens.basePen import BasePen
 def roundInt(v):
     return int(round(v))
 
-def roundIntPoint((x, y)):
+def roundIntPoint(xxx_todo_changeme):
+    (x, y) = xxx_todo_changeme
     return roundInt(x), roundInt(y)
 
 

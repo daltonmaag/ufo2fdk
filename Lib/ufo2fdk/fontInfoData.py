@@ -34,8 +34,8 @@ def styleMapFamilyNameFallback(info):
     familyName = getAttrWithFallback(info, "openTypeNamePreferredFamilyName")
     styleName = getAttrWithFallback(info, "openTypeNamePreferredSubfamilyName")
     if styleName is None:
-        styleName = u""
-    return (familyName + u" " + styleName).strip()
+        styleName = ""
+    return (familyName + " " + styleName).strip()
 
 # head
 
@@ -87,7 +87,7 @@ def openTypeNameUniqueIDFallback(info):
     vendor = getAttrWithFallback(info, "openTypeOS2VendorID")
     familyName = getAttrWithFallback(info, "styleMapFamilyName")
     styleName = getAttrWithFallback(info, "styleMapStyleName").title()
-    return u"%s;%s;%s %s" % (version, vendor, familyName, styleName)
+    return "%s;%s;%s %s" % (version, vendor, familyName, styleName)
 
 def openTypeNamePreferredFamilyNameFallback(info):
     """
@@ -164,10 +164,10 @@ def openTypeOS2WinDescentFallback(info):
 # postscript
 
 _postscriptFontNameExceptions = set("[](){}<>/%")
-_postscriptFontNameAllowed = set([unichr(i) for i in xrange(33, 137)])
+_postscriptFontNameAllowed = set([chr(i) for i in range(33, 137)])
 
 def normalizeStringForPostscript(s, allowSpaces=True):
-    s = unicode(s)
+    s = str(s)
     normalized = []
     for c in s:
         if c == " " and not allowSpaces:
@@ -188,14 +188,14 @@ def postscriptFontNameFallback(info):
     as defined in the specification. This will draw from
     *openTypeNamePreferredFamilyName* and *openTypeNamePreferredSubfamilyName*.
     """
-    name = u"%s-%s" % (getAttrWithFallback(info, "openTypeNamePreferredFamilyName"), getAttrWithFallback(info, "openTypeNamePreferredSubfamilyName"))
+    name = "%s-%s" % (getAttrWithFallback(info, "openTypeNamePreferredFamilyName"), getAttrWithFallback(info, "openTypeNamePreferredSubfamilyName"))
     return normalizeNameForPostscript(name)
 
 def postscriptFullNameFallback(info):
     """
     Fallback to *openTypeNamePreferredFamilyName openTypeNamePreferredSubfamilyName*.
     """
-    name = u"%s %s" % (getAttrWithFallback(info, "openTypeNamePreferredFamilyName"), getAttrWithFallback(info, "openTypeNamePreferredSubfamilyName"))
+    name = "%s %s" % (getAttrWithFallback(info, "openTypeNamePreferredFamilyName"), getAttrWithFallback(info, "openTypeNamePreferredSubfamilyName"))
     return normalizeNameForPostscript(name)
 
 def postscriptSlantAngleFallback(info):
@@ -483,9 +483,9 @@ def intListToNum(intList, start, length):
 def dateStringToTimeValue(date):
     try:
         t = time.strptime(date, "%Y/%m/%d %H:%M:%S")
-        return long(time.mktime(t))
+        return int(time.mktime(t))
     except OverflowError:
-        return 0L
+        return 0
 
 # ----
 # Test

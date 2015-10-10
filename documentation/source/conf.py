@@ -41,8 +41,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ufo2fdk'
-copyright = u'2009, Type Supply LLC'
+project = 'ufo2fdk'
+copyright = '2009, Type Supply LLC'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -168,8 +168,8 @@ htmlhelp_basename = 'ufo2fdkdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'ufo2fdk.tex', ur'ufo2fdk Documentation',
-   ur'Tal Leming', 'manual'),
+  ('index', 'ufo2fdk.tex', r'ufo2fdk Documentation',
+   r'Tal Leming', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
