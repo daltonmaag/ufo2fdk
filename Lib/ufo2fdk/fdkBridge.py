@@ -4,7 +4,7 @@ It uses subprocess.Popen to create a process that
 executes an FDK program.
 """
 
-
+import shutil
 import sys
 import os
 import re
@@ -39,14 +39,9 @@ def haveFDK():
     to be unavailable.
     """
     import subprocess
-    if _fdkToolDirectory is None:
-        return False
     env = _makeEnviron()
     for tool in ["makeotf", "checkoutlines", "autohint"]:
-        cmds = "which %s" % tool
-        popen = subprocess.Popen(cmds, stderr=subprocess.PIPE, stdout=subprocess.PIPE, env=env, shell=True)
-        stdout, stderr = popen.communicate()
-        if not (stdout or stderr):
+        if not shutil.which(tool):
             return False
     # now test to make sure that makeotf is new enough
     help = _execute(["makeotf", "-h"])[1]
@@ -236,7 +231,7 @@ else:
 
 def _makeEnviron():
     env = dict(os.environ)
-    if _fdkToolDirectory not in env["PATH"].split(":"):
+    if _fdkToolDirectory is not None and _fdkToolDirectory not in env["PATH"].split(":"):
         env["PATH"] += (":%s" % _fdkToolDirectory)
     kill = ["ARGVZERO", "EXECUTABLEPATH", "PYTHONHOME", "PYTHONPATH", "RESOURCEPATH"]
     for key in kill:
