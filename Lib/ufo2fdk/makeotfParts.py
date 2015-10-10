@@ -77,7 +77,7 @@ class MakeOTFPartsCompiler(object):
                 continue
             uniValue = None
             if glyphName in self.font:
-                uniValue = self.font[glyphName].str
+                uniValue = self.font[glyphName].unicode
             finalMap[glyphName] = normalizeGlyphName(glyphName, uniValue, list(finalMap.values()))
         # done
         return finalMap
@@ -175,8 +175,8 @@ class MakeOTFPartsCompiler(object):
         lines = []
         for designName in self.glyphOrder:
             finalName = self.glyphDesignNameToFinalNameMap[designName]
-            if designName in self.font and self.font[designName].str is not None:
-                code = self.font[designName].str
+            if designName in self.font and self.font[designName].unicode is not None:
+                code = self.font[designName].unicode
                 code = "%04X" % code
                 if len(code) <= 4:
                     code = "uni%s" % code

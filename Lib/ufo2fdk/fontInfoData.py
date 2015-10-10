@@ -167,7 +167,6 @@ _postscriptFontNameExceptions = set("[](){}<>/%")
 _postscriptFontNameAllowed = set([chr(i) for i in range(33, 137)])
 
 def normalizeStringForPostscript(s, allowSpaces=True):
-    s = str(s)
     normalized = []
     for c in s:
         if c == " " and not allowSpaces:
@@ -175,7 +174,7 @@ def normalizeStringForPostscript(s, allowSpaces=True):
         if c in _postscriptFontNameExceptions:
             continue
         if c not in _postscriptFontNameAllowed:
-            c = unicodedata.normalize("NFKD", c).encode("ascii", "ignore")
+            c = unicodedata.normalize("NFKD", c)
         normalized.append(c)
     return "".join(normalized)
 
