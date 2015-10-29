@@ -7,7 +7,7 @@ try:
     import fontTools
 except:
     print("*** Warning: ufo2fdk requires FontTools, see:")
-    print("    fonttools.sf.net")
+    print("    github.com/behdad/fonttools")
 
 try:
     import robofab
@@ -39,6 +39,9 @@ setup(name="ufo2fdk",
     author_email="tal@typesupply.com",
     url="http://code.typesupply.com",
     license="MIT",
-    packages=["ufo2fdk"],
+    packages=[
+        "ufo2fdk",
+        "ufo2fdk.pens"
+    ],
     package_dir={"":"Lib"}
 )
