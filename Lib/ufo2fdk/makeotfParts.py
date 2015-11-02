@@ -160,7 +160,7 @@ class MakeOTFPartsCompiler(object):
             l = "m=1,%s" % macStr(macCompatible)
             lines.append(l)
         text = "\n".join(lines) + "\n"
-        f = open(path, "wb")
+        f = open(path, "wt")
         f.write(text)
         f.close()
 
@@ -187,7 +187,7 @@ class MakeOTFPartsCompiler(object):
                 line = "%s %s" % (finalName, designName)
             lines.append(line)
         text = "\n".join(lines) + "\n"
-        f = codecs.open(path, "wb", encoding="utf8")
+        f = open(path, "wt", encoding="utf8")
         f.write(text)
         f.close()
 
@@ -235,7 +235,7 @@ class MakeOTFPartsCompiler(object):
             lines.append("IsOS/2OBLIQUE false")
         # write the file
         if lines:
-            f = open(path, "wb")
+            f = open(path, "wt")
             f.write("\n".join(lines))
             f.close()
 
@@ -287,7 +287,7 @@ class MakeOTFPartsCompiler(object):
             features.append(text)
         features = "\n\n".join(features)
         # write the result
-        f = codecs.open(path, "wb", encoding="utf8")
+        f = open(path, "wt", encoding="utf8")
         f.write(features)
         f.close()
 
