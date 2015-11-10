@@ -247,33 +247,14 @@ def _makeEnviron():
 
 def _execute(cmds):
     import subprocess
-    # for some reason, autohint and/or checkoutlines
-    # locks up when subprocess.PIPE is given. subprocess
-    # requires a real file so StringIO is not acceptable
-    # here. thus, make a temporary file.
-    stderrPath = tempfile.mkstemp()[1]
-    stdoutPath = tempfile.mkstemp()[1]
-    stderrFile = open(stderrPath, "w")
-    stdoutFile = open(stdoutPath, "w")
     # get the os.environ
     env = _makeEnviron()
     # make a string of escaped commands
     cmds = subprocess.list2cmdline(cmds)
     # go
-    popen = subprocess.Popen(cmds, stderr=stderrFile, stdout=stdoutFile, env=env, shell=True)
-    popen.wait()
-    # get the output
-    stderrFile.close()
-    stdoutFile.close()
-    stderrFile = open(stderrPath, "r")
-    stdoutFile = open(stdoutPath, "r")
-    stderr = stderrFile.read()
-    stdout = stdoutFile.read()
-    stderrFile.close()
-    stdoutFile.close()
-    # trash the temp files
-    os.remove(stderrPath)
-    os.remove(stdoutPath)
+    proc = subprocess.Popen(cmds, stderr=subprocess.PIPE, stdout=subprocess.PIPE, env=env, shell=True)
+	# wait to complete then get standard output and standard error
+    stdout, stderr = proc.communicate()
     # done
     return stderr, stdout
 
