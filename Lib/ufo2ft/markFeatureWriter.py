@@ -1,104 +1,88 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
+from collections import defaultdict
 
 
 class MarkFeatureWriter(object):
-    """Generates a mark or mkmk feature based on glyph anchors.
+    """Generates a mark feature based on a font's anchors."""
 
-    Takes in a list of <anchorName, accentAnchorName> tuples, which may
-    additionally include boolean parameters indicating whether to only include
-    combining accents and whether to expand the rule to aliased glyphs.
+    tag = "mark"
 
-    Takes in a list of aliases as tuples, each typically a base glyph and a
-    composite including the base glyph.
-    """
-
-    def __init__(self, font, anchorList, aliases=(), mkmk=False):
+    def __init__(self, font):
         self.font = font
-        self.anchorList = anchorList
-        self.aliases = aliases
-        self.mkmk = mkmk
+        self._setupAnchorGroups()
 
-    def _getAlias(self, name):
-        """Return an alias for a given glyph, if it exists."""
-
-        for base, alias in self.aliases:
-            if name == base:
-                return alias
-        return None
-
-    def _createAccentGlyphList(self, accentAnchorName, combAccentOnly):
-        """Return a list of <name, x, y> tuples for glyphs containing an anchor
-        with the given accent anchor name. If combAccentOnly is True, only
-        combining glyphs are returned.
-        """
-
-        glyphList = []
+    def _setupAnchorGroups(self):
+        anchorGroups = defaultdict(list)
+        anchorNames = set()
         for glyph in self.font:
-            if combAccentOnly and glyph.width != 0:
-                continue
+            for anchor in glyph.anchors:
+                anchorNames.add(anchor.name)
+        for anchorName in sorted(anchorNames):
+            if not anchorName.startswith("_"):
+                break
+            baseName = anchorName[1:]
+            if baseName in anchorNames:
+                anchorGroupName = baseName.split(".", 1)[0]
+                anchorGroups[anchorGroupName].append(baseName)
+        self.anchorGroups = anchorGroups
+
+    def _createAccentAndBaseGlyphLists(self, anchorName):
+        """Return two lists of <glyphName, x, y> tuples: one for accent glyphs, and
+        one for base glyphs containing an anchor with the given name.
+        """
+        accentAnchorName = "_" + anchorName
+        accentGlyphs = []
+        for glyph in self.font:
             for anchor in glyph.anchors:
                 if accentAnchorName == anchor.name:
-                    glyphList.append((glyph.name, anchor.x, anchor.y))
+                    accentGlyphs.append((glyph.name, anchor.x, anchor.y))
                     break
-        return glyphList
-
-    def _createBaseGlyphList(self, anchorName, accentGlyphs):
-        """Return a list of <name, x, y> tuples for glyphs containing an anchor
-        with the given anchor name. Glyphs included in accentGlyphs (a similar
-        list of tuples) are excluded if this is a mark-to-base rule.
-        """
-
         accentGlyphNames = set(glyphName for glyphName, _, _ in accentGlyphs)
-        glyphList = []
+        baseGlyphs = []
         for glyph in self.font:
-            if (not self.mkmk) and glyph.name in accentGlyphNames:
+            # XXX handle mkmk?
+            if glyph.name in accentGlyphNames:
                 continue
             for anchor in glyph.anchors:
                 if anchorName == anchor.name:
-                    glyphList.append((glyph.name, anchor.x, anchor.y))
+                    baseGlyphs.append((glyph.name, anchor.x, anchor.y))
                     break
-        return glyphList
+        return accentGlyphs, baseGlyphs
 
-    def _addMarkLookup(self, lines, lookupName, anchorName, accentAnchorName,
-                       combAccentOnly=False, checkAliases=False):
-        """Add a mark lookup for one tuple in the writer's anchor list."""
+    def _addMarkLookup(self, lines, lookupName, anchorGroup):
+        """Add a mark lookup for one group of anchors having the same name."""
+        anchorGroupName = anchorGroup[0].split(".", 1)[0]
 
         lines.append("  lookup %s {" % lookupName)
 
-        className = "@MC_%s_%s" % ("mkmk" if self.mkmk else "mark", anchorName)
-        ruleType = "mark" if self.mkmk else "base"
-        accentGlyphs = self._createAccentGlyphList(
-            accentAnchorName, combAccentOnly)
-        baseGlyphs = self._createBaseGlyphList(anchorName, accentGlyphs)
+        className = "@MC_%s_%s" % (self.tag, anchorGroupName)
 
-        for accentName, x, y in accentGlyphs:
+        groupAccentGlyphs = []
+        groupBaseGlyphs = []
+        for anchorName in anchorGroup:
+            accents, bases = self._createAccentAndBaseGlyphLists(anchorName)
+            groupAccentGlyphs.extend(accents)
+            groupBaseGlyphs.extend(bases)
+
+        for accentName, x, y in sorted(groupAccentGlyphs):
             lines.append(
                 "    markClass %s <anchor %d %d> %s;" %
                 (accentName, x, y, className))
 
-        for accentName, x, y in baseGlyphs:
+        for accentName, x, y in sorted(groupBaseGlyphs):
             lines.append(
-                "    pos %s %s <anchor %d %d> mark %s;" %
-                (ruleType, accentName, x, y, className))
-
-            if checkAliases:
-                alias = self._getAlias(accentName)
-                if alias:
-                    lines.append(
-                        "    pos %s %s <anchor %d %d> mark %s;" %
-                        (ruleType, alias, x, y, className))
+                "    pos base %s <anchor %d %d> mark %s;" %
+                (accentName, x, y, className))
 
         lines.append("  } %s;" % lookupName)
 
     def write(self):
         """Write the feature."""
+        lines = ["feature %s {" % self.tag]
 
-        featureName = "mkmk" if self.mkmk else "mark"
-        lines = ["feature %s {" % featureName]
+        for i, (name, group) in enumerate(sorted(self.anchorGroups.items())):
+            lookupName = "%s%d" % (self.tag, i + 1)
+            self._addMarkLookup(lines, lookupName, group)
 
-        for i, anchorPair in enumerate(self.anchorList):
-            lookupName = "%s%d" % (featureName, i + 1)
-            self._addMarkLookup(lines, lookupName, *anchorPair)
-
-        lines.append("} %s;" % featureName)
+        lines.append("} %s;" % self.tag)
         return "" if len([ln for ln in lines if ln]) == 2 else "\n".join(lines)
