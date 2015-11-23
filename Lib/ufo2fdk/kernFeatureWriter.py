@@ -414,7 +414,7 @@ def _test():
     >>> from defcon import Font
     >>> font = Font()
     >>> for glyphName in AGL2UV:
-    ...     font.newGlyph(glyphName)
+    ...     g = font.newGlyph(glyphName)
     >>> kerning = {
     ...     # various pair types
     ...     ("Agrave", "Agrave") : -100,
