@@ -140,7 +140,7 @@ class KernFeatureWriter(object):
         for groupNames, feaPrefix in ((list(self.side1Groups.keys()), side1FeaPrefix), (list(self.side2Groups.keys()), side2FeaPrefix)):
             for groupName in sorted(groupNames):
                 className = feaPrefix + groupName[groupPrefixLength:]
-                mapping[groupName] = makeLegalClassName(className, list(mapping.keys()))
+                mapping[groupName] = makeLegalClassName(className, mapping.values())
         # kerning
         newPairs = {}
         for (side1, side2), value in list(self.pairs.items()):
@@ -359,6 +359,15 @@ def makeLegalClassName(name, existing):
     '@kern1.noTransPossible'
     >>> makeLegalClassName(u"@kern1.•", [])
     '@kern1.noTransPossible'
+
+    clashing
+    --------
+
+    >>> makeLegalClassName("@kern2.@MMK_R_PUNCT_questiondown_2ND", [])
+    '@kern2.MMK_R_PUNCT_questiondown'
+
+    >>> makeLegalClassName("@kern2.@MMK_R_PUNCT_questiondown.case_2ND", ["@kern2.MMK_R_PUNCT_questiondown"])
+    '@kern2.MMK_R_PUNCT_questiondow1'
     """
     # slice off the prefix
     prefix = str(name[:classPrefixLength])
@@ -374,7 +383,7 @@ def makeLegalClassName(name, existing):
     # add the prefix
     name = prefix + name
     # make sure it is unique
-    _makeUniqueClassName(name, existing)
+    name = _makeUniqueClassName(name, existing)
     return name
 
 def _makeUniqueClassName(name, existing, counter=0):
@@ -414,7 +423,7 @@ def _test():
     >>> from defcon import Font
     >>> font = Font()
     >>> for glyphName in AGL2UV:
-    ...     font.newGlyph(glyphName)
+    ...     g = font.newGlyph(glyphName)
     >>> kerning = {
     ...     # various pair types
     ...     ("Agrave", "Agrave") : -100,
